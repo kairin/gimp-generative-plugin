@@ -1,5 +1,5 @@
 # Stable Boy
-# Copyright (C) 2022 Torben Giesselmann
+# Copyright (C) 2022-2023 Torben Giesselmann
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,45 +19,85 @@ import socket
 import hashlib
 import tempfile
 from threading import Thread
-from urlparse import urljoin
-from urllib2 import Request, urlopen
+from urllib.parse import urljoin
+from urllib.request import Request, urlopen
 from collections import namedtuple
+
+import gi
+gi.require_version('Gimp', '3.0')
+from gi.repository import Gimp
+
 from gimp_stable_boy.command_runner import config
 import gimp_stable_boy as sb
 from gimp_stable_boy.constants import PREFERENCES_SHELF_GROUP as PREFS
-from gimpfu import *
 
 
-class StableBoyCommand(Thread):
+class StableBoyCommand:
     LayerResult = namedtuple('LayerResult', 'name img children')
-    CommandMetadata = namedtuple('CommandMetadata', 'proc_name, blurb, help, author, copyright, date, label, imagetypes, params, results')
-    metadata = None
-    command_runner = None
+
+    proc_name = ""
+    blurb = ""
+    help_text = ""
+    author = "Torben Giesselmann"
+    copyright = "Torben Giesselmann"
+    date = "2023"
+    menu_label = ""
+    menu_path = ["<Image>/Stable Boy"]
+    image_types = "*"
+    sensitivity_mask = Gimp.ProcedureSensitivityMask.DRAWABLE
 
     @classmethod
-    def run_command(cls, *args, **kwargs): 
-        kwargs.update(dict(zip((param[1] for param in cls.metadata.params), args))) # type: ignore
-        sb.gimp.save_prefs(cls.metadata.proc_name, **kwargs) # type: ignore
-        cls.command_runner(cls(**kwargs))  # type: ignore <== command_runner runs an instance of command class
+    def run(cls, procedure, run_mode, image, n_drawables, drawables, args, data):
+        if run_mode == Gimp.RunMode.INTERACTIVE:
+            GimpUi.init(cls.proc_name)
+            dialog = GimpUi.ProcedureDialog(procedure)
+            if not dialog.run():
+                dialog.destroy()
+                return procedure.new_return_values(Gimp.PDBStatusType.CANCEL, GLib.Error())
 
-    def __init__(self, **kwargs):
-        Thread.__init__(self)
-        self.status = 'INITIALIZED'
+            config = dialog.get_config()
+            dialog.destroy()
+        else:
+            config = procedure.create_config()
+            config.set_property("image", image)
+
+        # Save preferences
+        # sb.gimp.save_prefs(cls.proc_name, **config.get_properties())
+
+        command = cls(image, config)
+        command.start()
+        Gimp.progress_init(f"Running {cls.menu_label}...")
+
+        while command.is_alive():
+            Gimp.progress_update(0.5)
+            Gimp.context_pop()
+            GLib.usleep(100000)
+            Gimp.context_push()
+
+        Gimp.progress_end()
+
+        if command.status == 'ERROR':
+            error = GLib.Error.new_literal(Gimp.PlugIn.error_quark(), command.error_msg, 0)
+            return procedure.new_return_values(Gimp.PDBStatusType.EXECUTION_ERROR, error)
+
+        return procedure.new_return_values(Gimp.PDBStatusType.SUCCESS, GLib.Error())
 
 
-class StableDiffusionCommand(StableBoyCommand):
+class StableDiffusionCommand(StableBoyCommand, Thread):
     uri = ''
 
-    def __init__(self, **kwargs):
-        StableBoyCommand.__init__(self, **kwargs)
+    def __init__(self, image, config):
+        Thread.__init__(self)
+        self.img = image
+        self.config = config
+        self.status = 'INITIALIZED'
         self.url = urljoin(sb.gimp.pref_value(PREFS, 'api_base_url', sb.constants.DEFAULT_API_URL), self.uri)
-        self.img = kwargs['image']
         self.images = None
         self.layers = None
         self.x, self.y, self.width, self.height = self._determine_active_area()
         print('x, y, w, h: ' + str(self.x) + ', ' + str(self.y) + ', ' + str(self.width) + ', ' + str(self.height))
-        self.img_target = sb.constants.IMAGE_TARGETS[kwargs.get('img_target', 0)]  # layers are the default img_target
-        self.req_data = self._make_request_data(**kwargs)
+        self.img_target = sb.constants.IMAGE_TARGETS[self.config.get_property('img_target')]  # layers are the default img_target
+        self.req_data = self._make_request_data()
         if config.TIMEOUT_REQUESTS:
             self.timeout = self._estimate_timeout(self.req_data)
         else:
@@ -73,7 +113,7 @@ class StableDiffusionCommand(StableBoyCommand):
                     req_file.write(json.dumps(self.req_data))
             sd_request = Request(url=self.url,
                                  headers={'Content-Type': 'application/json'},
-                                 data=json.dumps(self.req_data))
+                                 data=json.dumps(self.req_data).encode('utf-8'))
             # print(self.req_data)
             self.sd_resp = urlopen(sd_request, timeout=self.timeout)
             if self.sd_resp:
@@ -89,7 +129,8 @@ class StableDiffusionCommand(StableBoyCommand):
             self.status = 'ERROR'
             self.error_msg = str(e)
             print(e)
-            raise e
+            # Re-raising the exception is not necessary here as it's handled in the main thread
+            # raise e
 
     def _process_response(self, resp):
 
@@ -105,16 +146,16 @@ class StableDiffusionCommand(StableBoyCommand):
     def _determine_active_area(self):
         return sb.gimp.active_area(self.img)
 
-    def _make_request_data(self, **kwargs):
+    def _make_request_data(self):
         return {
-            'prompt': kwargs['prompt'],
-            'negative_prompt': kwargs['negative_prompt'],
-            'steps': kwargs['steps'],
-            'sampler_index': sb.constants.SAMPLERS[kwargs['sampler_index']],
-            'batch_size': int(kwargs['num_images']),
-            'cfg_scale': kwargs['cfg_scale'],
-            'seed': kwargs['seed'],
-            'restore_faces': kwargs['restore_faces'],
+            'prompt': self.config.get_property('prompt'),
+            'negative_prompt': self.config.get_property('negative_prompt'),
+            'steps': self.config.get_property('steps'),
+            'sampler_index': sb.constants.SAMPLERS[self.config.get_property('sampler_index')],
+            'batch_size': int(self.config.get_property('num_images')),
+            'cfg_scale': self.config.get_property('cfg_scale'),
+            'seed': self.config.get_property('seed'),
+            'restore_faces': self.config.get_property('restore_faces'),
             'width': self.width,
             'height': self.height,
         }
