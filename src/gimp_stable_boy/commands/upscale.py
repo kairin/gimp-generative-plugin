@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # Stable Boy
-# Copyright (C) 2022 Torben Giesselmann
+# Copyright (C) 2022-2023 Torben Giesselmann
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,28 +16,30 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import gimpfu
+import gi
+gi.require_version('Gimp', '3.0')
+from gi.repository import Gimp, GObject
+
 import gimp_stable_boy as sb
-from _command import StableBoyCommand, StableDiffusionCommand
+from ._command import StableDiffusionCommand
 
 
 class UpscaleCommand(StableDiffusionCommand):
     uri = 'sdapi/v1/extra-single-image'
-    metadata = StableBoyCommand.CommandMetadata("stable-boy-upscale", "Stable Boy " + sb.__version__ + " - Upscale",
-                    "Stable Diffusion plugin for AUTOMATIC1111's WebUI API", "Torben Giesselmann", "Torben Giesselmann",
-                    "2022", "<Image>/Stable Boy/Upscale", "*", [
-                        (gimpfu.PF_SLIDER, 'upscaling_resize', 'Upscaling factor', 2, (1, 4, 1)),
-                        (gimpfu.PF_OPTION, 'upscaler_1', 'Upscaler 1', 0, sb.constants.UPSCALERS),
-                        (gimpfu.PF_OPTION, 'upscaler_2', 'Upscaler 2', 0, sb.constants.UPSCALERS),
-                        (gimpfu.PF_SLIDER, 'extras_upscaler_2_visibility', 'Upscaler 2 visibility', 0, (0, 1, 0.1))],
-                        [],)
 
-    def _make_request_data(self, **kwargs):
+    proc_name = "stable-boy-upscale"
+    blurb = "Stable Boy " + sb.__version__ + " - Upscale"
+    help_text = "Stable Diffusion plugin for AUTOMATIC1111's WebUI API"
+    menu_label = "Upscale"
+
+    # Parameters will be defined in main.py's do_create_procedure
+
+    def _make_request_data(self):
         return {
-            'upscaling_resize': int(kwargs['upscaling_resize']),
-            'upscaler_1': sb.constants.UPSCALERS[kwargs['upscaler_1']],
-            'upscaler_2': sb.constants.UPSCALERS[kwargs['upscaler_2']],
-            'extras_upscaler_2_visibility': kwargs['extras_upscaler_2_visibility'],
+            'upscaling_resize': int(self.config.get_property('upscaling_resize')),
+            'upscaler_1': sb.constants.UPSCALERS[self.config.get_property('upscaler_1')],
+            'upscaler_2': sb.constants.UPSCALERS[self.config.get_property('upscaler_2')],
+            'extras_upscaler_2_visibility': self.config.get_property('extras_upscaler_2_visibility'),
             'image': sb.gimp.encode_img(self.img, self.x, self.y, self.width, self.height),
         }
 
@@ -46,3 +48,5 @@ class UpscaleCommand(StableDiffusionCommand):
 
     def _process_response(self, resp):
         self.images = [resp['image']]
+        if self.images:
+            sb.gimp.open_images(self.images)
