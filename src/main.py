@@ -77,64 +77,7 @@ class StableBoy(Gimp.PlugIn):
                         procedure.set_menu_label(cmd_cls.menu_label)
                         procedure.add_menu_path(cmd_cls.menu_path)
                         procedure.set_documentation(cmd_cls.blurb, cmd_cls.help_text, name)
-
-                        # Add arguments based on the command class
-                        if name == "stable-boy-txt2img":
-                            procedure.add_argument_from_pdb("image", "pdb-gimp-image", "Input Image", "")
-                            procedure.add_argument_from_pdb("drawable", "pdb-gimp-drawable", "Input Drawable", "")
-                            procedure.add_string_argument("prompt", "Prompt", "", "")
-                            procedure.add_string_argument("negative_prompt", "Negative prompt", "", "")
-                            procedure.add_string_argument("seed", "Seed", "-1", "")
-                            procedure.add_int_argument("steps", "Steps", 25, 1, 150) # Min, Max
-                            procedure.add_enum_argument("sampler_index", "Sampler", 0, sb.constants.SAMPLERS)
-                            procedure.add_boolean_argument("restore_faces", "Restore faces", False)
-                            procedure.add_double_argument("cfg_scale", "CFG", 7.5, 0, 20) # Min, Max
-                            procedure.add_int_argument("num_images", "Number of images", 1, 1, 4) # Min, Max
-                            procedure.add_enum_argument("img_target", "Results as", 0, sb.constants.IMAGE_TARGETS)
-                        elif name == "stable-boy-inpaint":
-                            procedure.add_argument_from_pdb("image", "pdb-gimp-image", "Input Image", "")
-                            procedure.add_argument_from_pdb("drawable", "pdb-gimp-drawable", "Input Drawable", "")
-                            procedure.add_string_argument("prompt", "Prompt", "", "")
-                            procedure.add_string_argument("negative_prompt", "Negative prompt", "", "")
-                            procedure.add_string_argument("seed", "Seed", "-1", "")
-                            procedure.add_int_argument("steps", "Steps", 25, 1, 150)
-                            procedure.add_enum_argument("sampler_index", "Sampler", 0, sb.constants.SAMPLERS)
-                            procedure.add_boolean_argument("restore_faces", "Restore faces", False)
-                            procedure.add_double_argument("cfg_scale", "CFG", 7.5, 0, 20)
-                            procedure.add_double_argument("denoising_strength", "Denoising strength %", 50.0, 0, 100)
-                            procedure.add_boolean_argument("autofit_inpainting", "Autofit inpainting region", True)
-                            procedure.add_int_argument("mask_blur", "Mask blur", 4, 0, 32)
-                            procedure.add_enum_argument("inpainting_fill", "Inpainting fill", 1, sb.constants.INPAINTING_FILL_MODE)
-                            procedure.add_boolean_argument("inpaint_full_res", "Inpaint at full resolution", True)
-                            procedure.add_int_argument("inpaint_full_res_padding", "Full res. inpainting padding", 0, 0, 256)
-                            procedure.add_int_argument("num_images", "Number of images", 1, 1, 4)
-                            procedure.add_enum_argument("img_target", "Results as", 0, sb.constants.IMAGE_TARGETS)
-                            procedure.add_boolean_argument("apply_inpainting_mask", "Apply inpainting mask", True)
-                        elif name == "stable-boy-img2img":
-                            procedure.add_argument_from_pdb("image", "pdb-gimp-image", "Input Image", "")
-                            procedure.add_argument_from_pdb("drawable", "pdb-gimp-drawable", "Input Drawable", "")
-                            procedure.add_string_argument("prompt", "Prompt", "", "")
-                            procedure.add_string_argument("negative_prompt", "Negative prompt", "", "")
-                            procedure.add_string_argument("seed", "Seed", "-1", "")
-                            procedure.add_int_argument("steps", "Steps", 25, 1, 150)
-                            procedure.add_enum_argument("sampler_index", "Sampler", 0, sb.constants.SAMPLERS)
-                            procedure.add_boolean_argument("restore_faces", "Restore faces", False)
-                            procedure.add_double_argument("cfg_scale", "CFG", 7.5, 0, 20)
-                            procedure.add_double_argument("denoising_strength", "Denoising strength %", 50.0, 0, 100)
-                            procedure.add_int_argument("num_images", "Number of images", 1, 1, 4)
-                            procedure.add_enum_argument("img_target", "Results as", 0, sb.constants.IMAGE_TARGETS)
-                        elif name == "stable-boy-upscale":
-                            procedure.add_argument_from_pdb("image", "pdb-gimp-image", "Input Image", "")
-                            procedure.add_argument_from_pdb("drawable", "pdb-gimp-drawable", "Input Drawable", "")
-                            procedure.add_int_argument("upscaling_resize", "Upscaling factor", 2, 1, 4)
-                            procedure.add_enum_argument("upscaler_1", "Upscaler 1", 0, sb.constants.UPSCALERS)
-                            procedure.add_enum_argument("upscaler_2", "Upscaler 2", 0, sb.constants.UPSCALERS)
-                            procedure.add_double_argument("extras_upscaler_2_visibility", "Upscaler 2 visibility", 0, 0, 1)
-
-                        # Add other commands' arguments here
-                        elif name == "stable-boy-prefs":
-                            procedure.add_string_argument("api_base_url", "API URL", sb.constants.DEFAULT_API_URL, "")
-
+                        cmd_cls.add_arguments(procedure)
                         return procedure
 
         return None

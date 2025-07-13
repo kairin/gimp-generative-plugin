@@ -1,7 +1,7 @@
 <a name="readme-top"></a>
 
 <div>
-<h1 align="center">Stable Boy</h1>
+<h1 align="center">GIMP Generative Plugin</h1>
   <p align="center">
     A GIMP plugin for AUTOMATIC1111's Stable Diffusion WebUI
   </p>
@@ -9,7 +9,7 @@
 
 ## About
 
-[AUTOMATIC1111's Stable Diffusion WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui) is one of the most powerful tools in the generative AI space. Stable Boy puts that power into GIMP 2.10 by calling into A1111 WebUI's API.
+[AUTOMATIC1111's Stable Diffusion WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui) is one of the most powerful tools in the generative AI space. This plugin puts that power into GIMP 2.10 by calling into A1111 WebUI's API.
 
 ## Compatibility
 
@@ -25,26 +25,14 @@ Here's a short demo video (of v0.1 ... haven't found time to make a new one):
 
 ## Installation
 
-1. Clone the repo:
-   ```sh
-   git clone https://github.com/thndrbrrr/gimp-stable-boy.git
-   ```
-1. Start GIMP, open Preferences and add the absolute path to _sub-folder_ (!) `src` to GIMP's plugin search path:
-   ```
-   /home/...and-so-on.../gimp-stable-boy/src     # MacOS, Linux
-   C:/Users/...and-so-on.../gimp-stable-boy/src  # Windows
-   ```
-   ![GIMP Preferences](public/images/gimp-prefs-plugin-path.png)
-1. Restart GIMP.
-1. Start A1111 WebUI with argument `--api`. It doesn't matter whether it's running on your local machine or somewhere in the cloud.
-1. Open Stable Boy's preferences (top menu > Stable Boy > Preferences) and copy-paste A1111 WebUI's URL (something like `https://abcdef123.gradio.com`) into the `API URL` field.
+Please see the [TESTING.md](TESTING.md) file for installation and testing instructions.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 ## Usage
 
-Stable Boy can be found in the `Stable Boy` top menu, with the following options:
+The plugin can be found in the `Generative` top menu, with the following options:
 - Preferences
 - Text to Image
 - Image to Image
@@ -53,11 +41,11 @@ Stable Boy can be found in the `Stable Boy` top menu, with the following options
 - Scripts
   - X/Y plot
 
-> ℹ️ Stable Boy's menu items will be grayed out if no image is open. 
+> ℹ️ The plugin's menu items will be grayed out if no image is open.
 
 ### Model selection
 
-Stable Boy currently doesn't have an option to choose the model. You'll have to do that in WebUI. Loading an inpainting model is recommended.
+The plugin currently doesn't have an option to choose the model. You'll have to do that in WebUI. Loading an inpainting model is recommended.
 
 ### Image size
 
@@ -65,20 +53,20 @@ The minimum resolution is 512x512. Ideally choose dimensions that are multiples 
 
 ### Generate images or layers
 
-Stable Boy can open results coming from Stable Diffusion as new images, or they can be added as new layers to the current image. The `Results as` option dropdown lets you control this.
+The plugin can open results coming from Stable Diffusion as new images, or they can be added as new layers to the current image. The `Results as` option dropdown lets you control this.
 
 Using layers is very powerful, especially when inpainting large images.
 
 ### Inpainting
 
-Add a layer named `Inpainting Mask` to the image and make it the top layer. Use a paintbrush and paint the region you want to inpaint with black on that mask layer. Stable Boy will automatically determine the area of the image to process (multiples of 256 and at least 512x512). When results are added as layers, the inpainting mask is applied to those layers so that they really only contain the masked part.
+Add a layer named `Inpainting Mask` to the image and make it the top layer. Use a paintbrush and paint the region you want to inpaint with black on that mask layer. The plugin will automatically determine the area of the image to process (multiples of 256 and at least 512x512). When results are added as layers, the inpainting mask is applied to those layers so that they really only contain the masked part.
 
 In the GIF below you can see how multiple variations of inpainting are added as layers, which can then be compared easily:
 
 <!-- ![Inpainting with layers](public/images/inpainting_with_layers.gif) -->
 ![Inpainting with layers](public/images/inpainting_v5.gif)
 
-Stable Boy inserts any generated layers below the inpainting mask layer and then hides the mask layer. The mask itself remains as is.
+The plugin inserts any generated layers below the inpainting mask layer and then hides the mask layer. The mask itself remains as is.
 
 > 👉 Select the mask layer and hit `DEL` to clear the mask.
 
@@ -104,7 +92,7 @@ Use rectangular selections for selecting the region that Stable Diffusion will p
 
 <!-- 🔴🔴🔴 GIF GIF GIF -->
 
-If there is neither a selection nor an inpainting mask (see below), Stable Boy will process the full image. (Therefore image sizes should also be multiples of 8.)
+If there is neither a selection nor an inpainting mask (see below), the plugin will process the full image. (Therefore image sizes should also be multiples of 8.)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -112,7 +100,7 @@ If there is neither a selection nor an inpainting mask (see below), Stable Boy w
 ## Roadmap
 
 - [x] ~~Rectangular selections as image sources for each mode~~
-- [x] ~~Inpainting on large images: Stable Boy determines the region to send to Stable Diffusion based on where you painted the mask~~
+- [x] ~~Inpainting on large images: The plugin determines the region to send to Stable Diffusion based on where you painted the mask~~
 - [x] ~~Script: X/Y plot~~
 - [ ] Outpainting
 - [ ] Better GUI

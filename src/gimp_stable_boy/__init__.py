@@ -1,6 +1,6 @@
-import constants
-import gimp_funcs as gimp
-from .config import Config as config
-from .command_runner import run_command, run_sd_command
+from . import constants
+from . import config
+from . import gimp_funcs
+from . import command_runner
 
-__version__ = '0.4'
+__version__ = "0.2.0"

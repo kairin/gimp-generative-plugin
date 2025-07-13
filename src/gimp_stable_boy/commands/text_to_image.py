@@ -33,17 +33,19 @@ class Txt2ImgCommand(StableDiffusionCommand):
     menu_label = "Text to Image"
     # menu_path is already defined in StableBoyCommand
 
-    # Parameters will be defined in main.py's do_create_procedure
-    # For reference, old params were:
-    # (gimpfu.PF_STRING, 'prompt', 'Prompt', ''),
-    # (gimpfu.PF_STRING, 'negative_prompt', 'Negative prompt', ''),
-    # (gimpfu.PF_STRING, 'seed', 'Seed', '-1'),
-    # (gimpfu.PF_SLIDER, 'steps', 'Steps', 25, (1, 150, 25)),
-    # (gimpfu.PF_OPTION, 'sampler_index', 'Sampler', 0, sb.constants.SAMPLERS),
-    # (gimpfu.PF_BOOL, 'restore_faces', 'Restore faces', False),
-    # (gimpfu.PF_SLIDER, 'cfg_scale', 'CFG', 7.5, (0, 20, 0.5)),
-    # (gimpfu.PF_SLIDER, 'num_images', 'Number of images', 1, (1, 4, 1)),
-    # (gimpfu.PF_OPTION, 'img_target', 'Results as', 0, sb.constants.IMAGE_TARGETS),
+    @classmethod
+    def add_arguments(cls, procedure):
+        procedure.add_argument_from_pdb("image", "pdb-gimp-image", "Input Image", "")
+        procedure.add_argument_from_pdb("drawable", "pdb-gimp-drawable", "Input Drawable", "")
+        procedure.add_string_argument("prompt", "Prompt", "", "")
+        procedure.add_string_argument("negative_prompt", "Negative prompt", "", "")
+        procedure.add_string_argument("seed", "Seed", "-1", "")
+        procedure.add_int_argument("steps", "Steps", 25, 1, 150) # Min, Max
+        procedure.add_enum_argument("sampler_index", "Sampler", 0, sb.constants.SAMPLERS)
+        procedure.add_boolean_argument("restore_faces", "Restore faces", False)
+        procedure.add_double_argument("cfg_scale", "CFG", 7.5, 0, 20) # Min, Max
+        procedure.add_int_argument("num_images", "Number of images", 1, 1, 4) # Min, Max
+        procedure.add_enum_argument("img_target", "Results as", 0, sb.constants.IMAGE_TARGETS)
 
     def _make_request_data(self):
         data = super()._make_request_data()
