@@ -32,7 +32,14 @@ class UpscaleCommand(StableDiffusionCommand):
     help_text = "Stable Diffusion plugin for AUTOMATIC1111's WebUI API"
     menu_label = "Upscale"
 
-    # Parameters will be defined in main.py's do_create_procedure
+    @classmethod
+    def add_arguments(cls, procedure):
+        procedure.add_argument_from_pdb("image", "pdb-gimp-image", "Input Image", "")
+        procedure.add_argument_from_pdb("drawable", "pdb-gimp-drawable", "Input Drawable", "")
+        procedure.add_int_argument("upscaling_resize", "Upscaling factor", 2, 1, 4)
+        procedure.add_enum_argument("upscaler_1", "Upscaler 1", 0, sb.constants.UPSCALERS)
+        procedure.add_enum_argument("upscaler_2", "Upscaler 2", 0, sb.constants.UPSCALERS)
+        procedure.add_double_argument("extras_upscaler_2_visibility", "Upscaler 2 visibility", 0, 0, 1)
 
     def _make_request_data(self):
         return {

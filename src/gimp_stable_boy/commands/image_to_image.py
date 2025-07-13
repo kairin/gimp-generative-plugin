@@ -32,7 +32,20 @@ class Img2ImgCommand(StableDiffusionCommand):
     help_text = "Stable Diffusion plugin for AUTOMATIC1111's WebUI API"
     menu_label = "Image to Image"
 
-    # Parameters will be defined in main.py's do_create_procedure
+    @classmethod
+    def add_arguments(cls, procedure):
+        procedure.add_argument_from_pdb("image", "pdb-gimp-image", "Input Image", "")
+        procedure.add_argument_from_pdb("drawable", "pdb-gimp-drawable", "Input Drawable", "")
+        procedure.add_string_argument("prompt", "Prompt", "", "")
+        procedure.add_string_argument("negative_prompt", "Negative prompt", "", "")
+        procedure.add_string_argument("seed", "Seed", "-1", "")
+        procedure.add_int_argument("steps", "Steps", 25, 1, 150)
+        procedure.add_enum_argument("sampler_index", "Sampler", 0, sb.constants.SAMPLERS)
+        procedure.add_boolean_argument("restore_faces", "Restore faces", False)
+        procedure.add_double_argument("cfg_scale", "CFG", 7.5, 0, 20)
+        procedure.add_double_argument("denoising_strength", "Denoising strength %", 50.0, 0, 100)
+        procedure.add_int_argument("num_images", "Number of images", 1, 1, 4)
+        procedure.add_enum_argument("img_target", "Results as", 0, sb.constants.IMAGE_TARGETS)
 
     def _make_request_data(self):
         req_data = super()._make_request_data()

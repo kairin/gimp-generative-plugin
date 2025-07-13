@@ -47,6 +47,10 @@ class StableBoyCommand:
     sensitivity_mask = Gimp.ProcedureSensitivityMask.DRAWABLE
 
     @classmethod
+    def add_arguments(cls, procedure):
+        pass
+
+    @classmethod
     def run(cls, procedure, run_mode, image, n_drawables, drawables, args, data):
         if run_mode == Gimp.RunMode.INTERACTIVE:
             GimpUi.init(cls.proc_name)

@@ -33,24 +33,26 @@ class InpaintingCommand(Img2ImgCommand):
     help_text = "Stable Diffusion plugin for AUTOMATIC1111's WebUI API"
     menu_label = "Inpainting"
 
-    # Parameters will be defined in main.py's do_create_procedure
-    # For reference, old params were:
-    # (gimpfu.PF_STRING, 'prompt', 'Prompt', ''),
-    # (gimpfu.PF_STRING, 'negative_prompt', 'Negative prompt', ''),
-    # (gimpfu.PF_STRING, 'seed', 'Seed', '-1'),
-    # (gimpfu.PF_SLIDER, 'steps', 'Steps', 25, (1, 150, 25)),
-    # (gimpfu.PF_OPTION, 'sampler_index', 'Sampler', 0, sb.constants.SAMPLERS),
-    # (gimpfu.PF_BOOL, 'restore_faces', 'Restore faces', False),
-    # (gimpfu.PF_SLIDER, 'cfg_scale', 'CFG', 7.5, (0, 20, 0.5)),
-    # (gimpfu.PF_SLIDER, 'denoising_strength', 'Denoising strength %', 50.0, (0, 100, 1)),
-    # (gimpfu.PF_BOOL, 'autofit_inpainting', 'Autofit inpainting region', True),
-    # (gimpfu.PF_SLIDER, 'mask_blur', 'Mask blur', 4, (0, 32, 1)),
-    # (gimpfu.PF_OPTION, 'inpainting_fill', 'Inpainting fill', 1, sb.constants.INPAINTING_FILL_MODE),
-    # (gimpfu.PF_BOOL, 'inpaint_full_res', 'Inpaint at full resolution', True),
-    # (gimpfu.PF_INT, 'inpaint_full_res_padding', 'Full res. inpainting padding', 0),
-    # (gimpfu.PF_SLIDER, 'num_images', 'Number of images', 1, (1, 4, 1)),
-    # (gimpfu.PF_OPTION, 'img_target', 'Results as', 0, sb.constants.IMAGE_TARGETS),
-    # (gimpfu.PF_BOOL, 'apply_inpainting_mask', 'Apply inpainting mask', True),
+    @classmethod
+    def add_arguments(cls, procedure):
+        procedure.add_argument_from_pdb("image", "pdb-gimp-image", "Input Image", "")
+        procedure.add_argument_from_pdb("drawable", "pdb-gimp-drawable", "Input Drawable", "")
+        procedure.add_string_argument("prompt", "Prompt", "", "")
+        procedure.add_string_argument("negative_prompt", "Negative prompt", "", "")
+        procedure.add_string_argument("seed", "Seed", "-1", "")
+        procedure.add_int_argument("steps", "Steps", 25, 1, 150)
+        procedure.add_enum_argument("sampler_index", "Sampler", 0, sb.constants.SAMPLERS)
+        procedure.add_boolean_argument("restore_faces", "Restore faces", False)
+        procedure.add_double_argument("cfg_scale", "CFG", 7.5, 0, 20)
+        procedure.add_double_argument("denoising_strength", "Denoising strength %", 50.0, 0, 100)
+        procedure.add_boolean_argument("autofit_inpainting", "Autofit inpainting region", True)
+        procedure.add_int_argument("mask_blur", "Mask blur", 4, 0, 32)
+        procedure.add_enum_argument("inpainting_fill", "Inpainting fill", 1, sb.constants.INPAINTING_FILL_MODE)
+        procedure.add_boolean_argument("inpaint_full_res", "Inpaint at full resolution", True)
+        procedure.add_int_argument("inpaint_full_res_padding", "Full res. inpainting padding", 0, 0, 256)
+        procedure.add_int_argument("num_images", "Number of images", 1, 1, 4)
+        procedure.add_enum_argument("img_target", "Results as", 0, sb.constants.IMAGE_TARGETS)
+        procedure.add_boolean_argument("apply_inpainting_mask", "Apply inpainting mask", True)
 
     def __init__(self, image, config):
         super().__init__(image, config)

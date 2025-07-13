@@ -30,7 +30,9 @@ class PreferencesCommand(StableBoyCommand):
     help_text = "Stable Diffusion plugin for AUTOMATIC1111's WebUI API"
     menu_label = "Preferences"
 
-    # Parameters will be defined in main.py's do_create_procedure
+    @classmethod
+    def add_arguments(cls, procedure):
+        procedure.add_string_argument("api_base_url", "API URL", sb.constants.DEFAULT_API_URL, "")
 
     def __init__(self, image, config):
         self.config = config
